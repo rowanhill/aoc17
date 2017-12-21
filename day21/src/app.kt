@@ -76,12 +76,10 @@ fun main(args: Array<String>) {
     )
 
     fun expandGrid(grid: List<List<Char>>): List<List<Char>> {
-        val subGridSize = if (grid.size % 2 == 0) {
-            2
-        } else if (grid.size % 3 == 0) {
-            3
-        } else {
-            throw Exception("Unexpected grid size: ${grid.size}")
+        val subGridSize = when {
+            grid.size % 2 == 0 -> 2
+            grid.size % 3 == 0 -> 3
+            else -> throw Exception("Unexpected grid size: ${grid.size}")
         }
 
         return (0 until grid.size / subGridSize).flatMap { y ->
