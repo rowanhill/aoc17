@@ -8,19 +8,17 @@ import java.io.File
 
  */
 fun rotate90(grid: List<List<Char>>): List<List<Char>> {
-    if (grid.size == 3) {
-        return listOf(
+    return when {
+        grid.size == 3 -> listOf(
                 listOf(grid[2][0], grid[1][0], grid[0][0]),
                 listOf(grid[2][1], grid[1][1], grid[0][1]),
                 listOf(grid[2][2], grid[1][2], grid[0][2])
         )
-    } else if (grid.size == 2) {
-        return listOf(
+        grid.size == 2 -> listOf(
                 listOf(grid[1][0], grid[0][0]),
                 listOf(grid[1][1], grid[0][1])
         )
-    } else {
-        throw Exception("Unexpected sub-grid size when rotating: ${grid.size}")
+        else -> throw Exception("Unexpected sub-grid size when rotating: ${grid.size}")
     }
 }
 
@@ -33,7 +31,7 @@ fun flipY(grid: List<List<Char>>): List<List<Char>> {
 }
 
 fun asRule(grid: List<List<Char>>): String {
-    return grid.map { it.joinToString("") }.joinToString("/")
+    return grid.joinToString("/") { it.joinToString("") }
 }
 
 fun asGrid(spec: String): List<List<Char>> {
@@ -62,6 +60,7 @@ fun main(args: Array<String>) {
     val rules = File("src/input.txt").readLines()
             .map { it.split(" => ") }
             .map { it[0] to it[1] }
+            .flatMap { permutations(asGrid(it.first)).distinct().map { p -> p to it.second } } //permute each rule input
             .toMap()
 
     /*
@@ -103,8 +102,7 @@ fun main(args: Array<String>) {
                             )
                         }
 
-                val permutations = permutations(subGrid)
-                val newSubGridSpec = permutations.map { rules[it] }.filterNotNull().first()
+                val newSubGridSpec = rules[asRule(subGrid)]!!
                 val newSubGrid = asGrid(newSubGridSpec)
 
                 newSubGrid.forEachIndexed { i, subRow ->
