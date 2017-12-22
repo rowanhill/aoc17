@@ -1,5 +1,11 @@
 import java.io.File
 
+enum class State {
+    Clean,
+    Weakened,
+    Infected,
+    Flagged
+}
 
 fun main(args: Array<String>) {
     val directions = listOf(
@@ -9,6 +15,8 @@ fun main(args: Array<String>) {
             Pair(0, -1)  // left  = 3
     )
 
+    val weakened = HashSet<Pair<Int, Int>>()
+    val flagged = HashSet<Pair<Int, Int>>()
     val mapSizeHalf = 12
     val infected = HashSet<Pair<Int, Int>>()
     File("src/input.txt").readLines().forEachIndexed { lineIndex, line ->
@@ -39,25 +47,52 @@ fun main(args: Array<String>) {
     fun isInfected(): Boolean {
         return infected.contains(curPosition)
     }
+    fun isWeakened(): Boolean {
+        return weakened.contains(curPosition)
+    }
+    fun isFlagged(): Boolean {
+        return flagged.contains(curPosition)
+    }
+    fun getState(): State {
+        return when {
+            isInfected() -> State.Infected
+            isWeakened() -> State.Weakened
+            isFlagged() -> State.Flagged
+            else -> State.Clean
+        }
+    }
+    fun weaken() {
+        weakened.add(curPosition)
+    }
+    fun flag() {
+        infected.remove(curPosition)
+        flagged.add(curPosition)
+    }
     fun infect() {
         numInfected++
+        weakened.remove(curPosition)
         infected.add(curPosition)
     }
     fun clean() {
+        flagged.remove(curPosition)
         infected.remove(curPosition)
     }
 
-    repeat(10000) {
-        if (isInfected()) {
-            turnRight()
-        } else {
-            turnLeft()
+    repeat(10000000) {
+        val curState = getState()
+        
+        when (curState) {
+            State.Clean -> turnLeft()
+            State.Weakened -> { /* no-op */ }
+            State.Infected -> turnRight()
+            State.Flagged -> { turnLeft(); turnLeft() }
         }
 
-        if (!isInfected()) {
-            infect()
-        } else {
-            clean()
+        when (curState) {
+            State.Clean -> weaken()
+            State.Weakened -> infect()
+            State.Infected -> flag()
+            State.Flagged -> clean()
         }
 
         move()
